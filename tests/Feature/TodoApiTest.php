@@ -20,8 +20,10 @@ class TodoApiTest extends TestCase
         //prepare the data for the new todo
         $data = [
             'title' => 'My First Todo',
-            'due_date' => now()->addDays(5)->format('d-m-y'),
             'assignee' => 'John Doe',
+            'due_date' => now()->addDays(5)->format('d-m-y'),
+            'time_tracked' => '0',
+            'status' => 'pending',
             'priority' => 'medium',
         ];
         //make post request with data
