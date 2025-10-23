@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTodoRequest;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 
@@ -26,9 +27,21 @@ class TodoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTodoRequest $request)
     {
-        //
+        //validate with custom validation in form request
+        $validated = $request->validated();
+
+        //store data in db
+        $todo = Todo::create($validated);
+
+        //return a structured response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Todo created successfully.',
+            'data' => $todo,
+        ], 201);
+
     }
 
     /**
