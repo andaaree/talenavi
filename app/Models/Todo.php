@@ -10,5 +10,9 @@ class Todo extends Model
 {
     use HasFactory, SoftDeletes;
 
-    
+    protected $guarded = [];
+
+    protected $casts = [
+      'due_date'=> 'datetime:d-m-Y',
+    ];
 }
