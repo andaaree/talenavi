@@ -7,4 +7,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('/todo/post',[TodoController::class,'store'])->name('todo.post');
+Route::post('/todo',[TodoController::class,'store'])->name('todo.post');
