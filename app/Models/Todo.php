@@ -24,6 +24,8 @@ class Todo extends Model
 
     protected $casts = [
       'due_date'=> 'datetime:d-m-Y',
+      'status' => TodoStatusEnum::class,
+      'priority' => TodoPriorityEnum::class
     ];
 
     protected $attributes = [
