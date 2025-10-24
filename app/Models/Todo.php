@@ -125,4 +125,13 @@ class Todo extends Model
         };
     }
 
+    public static function getStatusSummary() : array{
+        $status = self::query()
+        ->select('status')
+        ->selectRaw('count(*) as total')
+        ->groupBy('status')
+        ->pluck('total','status');
+
+        return ['status_summary' => $status];
+    }
 }
