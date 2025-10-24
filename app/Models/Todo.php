@@ -185,4 +185,41 @@ class Todo extends Model
         return ['due_date_summary' => $dues];
     }
 
+    public static function getKeywordSummary() : array {
+        $title = self::query()
+                ->selectRaw("UPPER(LEFT(title, 1)) as letter")
+                ->selectRaw("count(*) as total")
+                ->groupBy('letter')
+                ->orderBy('letter', 'asc')
+                ->get();
+
+        // 1. Get all titles and join them into one big string
+        $allTitles = self::pluck('title')->join(' ');
+        // 2. Normalize the string (lowercase, remove punctuation)
+        $normalized = preg_replace('/[^\w\s]/', '', strtolower($allTitles));
+        // 3. Get all individual words
+        $allWords = str_word_count($normalized, 1);
+        // 4. Define simple "stop words" to ignore
+        $stopWords = [
+            'a', 'an', 'the', 'to', 'of', 'for', 'with', 'on', 'in', 'it', 'is', 'and'
+        ];
+        $frequencies = [];
+        foreach ($allWords as $word) {
+            // 5. Skip if it's a stop word or too short
+            if (in_array($word, $stopWords) || strlen($word) <= 2) {
+                continue;
+            }
+            // 6. Count the frequency
+            $frequencies[$word] = ($frequencies[$word] ?? 0) + 1;
+        }
+        // 7. Sort from most frequent to least frequent
+        arsort($frequencies);
+
+        $words = array_slice($frequencies, 0, 10);
+        return ['title_summary' =>
+            ['alphabetic_titles' => $title],
+            ['similar_titles' => $words]
+        ];
+    }
+
 }
