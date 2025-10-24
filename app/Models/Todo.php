@@ -171,4 +171,18 @@ class Todo extends Model
         return ['assignee_summary' => $assignee];
     }
 
+    public static function getDueDateSummary() : array {
+        $dues = self::query()
+            ->selectRaw('YEAR(due_date) as year, MONTH(due_date) as month, SUM(time_tracked) as total_time')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as total_pending_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as total_open_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as total_in_progress_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as total_timetracked_completed_todos")
+            ->groupBy('year')->groupBy('month')
+            ->orderBy('year') ->orderBy('month')
+            ->get();
+
+        return ['due_date_summary' => $dues];
+    }
+
 }
