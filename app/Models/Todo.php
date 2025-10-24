@@ -112,4 +112,17 @@ class Todo extends Model
 
         return $query;
     }
+
+    public static function getSummary(string $type){
+        return match ($type) {
+            'assignee' => self::getAssigneeSummary(),
+            'time_tracked' => self::getTimeTrackedSummary(),
+            'status' => self::getStatusSummary(),
+            'priority' => self::getPrioritySummary(),
+            'due_date' => self::getDueDateSummary(),
+            'keyword' => self::getKeywordSummary(),
+            default => ['status' => 'error', 'messages' => 'Invalid summary type provided.','code' => 400],
+        };
+    }
+
 }
