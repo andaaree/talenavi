@@ -134,4 +134,14 @@ class Todo extends Model
 
         return ['status_summary' => $status];
     }
+
+    public static function getPrioritySummary() : array{
+        $prior = self::query()
+            ->select('priority')
+            ->selectRaw('count(*) as total')
+            ->groupBy('priority')
+            ->pluck('total', 'priority');
+        return ['priority_summary' => $prior];
+    }
+
 }
