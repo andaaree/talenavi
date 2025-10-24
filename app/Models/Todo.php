@@ -112,4 +112,114 @@ class Todo extends Model
 
         return $query;
     }
+
+    public static function getSummary(string $type){
+        return match ($type) {
+            'assignee' => self::getAssigneeSummary(),
+            'time_tracked' => self::getTimeTrackedSummary(),
+            'status' => self::getStatusSummary(),
+            'priority' => self::getPrioritySummary(),
+            'due_date' => self::getDueDateSummary(),
+            'keyword' => self::getKeywordSummary(),
+            default => ['status' => 'error', 'messages' => 'Invalid summary type provided.','code' => 400],
+        };
+    }
+
+    public static function getStatusSummary() : array{
+        $status = self::query()
+        ->select('status')
+        ->selectRaw('count(*) as total')
+        ->groupBy('status')
+        ->pluck('total','status');
+
+        return ['status_summary' => $status];
+    }
+
+    public static function getPrioritySummary() : array{
+        $prior = self::query()
+            ->select('priority')
+            ->selectRaw('count(*) as total')
+            ->groupBy('priority')
+            ->pluck('total', 'priority');
+        return ['priority_summary' => $prior];
+    }
+
+    public static function getTimeTrackedSummary() : array{
+        $time = self::query()
+                ->selectRaw('YEAR(due_date) as year, MONTH(due_date) as month, SUM(time_tracked) as total_time')
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get();
+        return ['time_tracked_summary' => $time];
+    }
+
+    public static function getAssigneeSummary() : array {
+        $assignee = self::query()
+            ->select('assignee')
+            ->selectRaw('COUNT(*) as total_todos')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as total_pending_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as total_timetracked_completed_todos")
+            ->groupBy('assignee')
+            ->get()
+            ->keyBy('assignee')
+            ->map(function ($item) {
+                return collect($item->toArray())->except('assignee');
+            });
+            ;
+
+        return ['assignee_summary' => $assignee];
+    }
+
+    public static function getDueDateSummary() : array {
+        $dues = self::query()
+            ->selectRaw('YEAR(due_date) as year, MONTH(due_date) as month, SUM(time_tracked) as total_time')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as total_pending_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as total_open_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as total_in_progress_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as total_timetracked_completed_todos")
+            ->groupBy('year')->groupBy('month')
+            ->orderBy('year') ->orderBy('month')
+            ->get();
+
+        return ['due_date_summary' => $dues];
+    }
+
+    public static function getKeywordSummary() : array {
+        $title = self::query()
+                ->selectRaw("UPPER(LEFT(title, 1)) as letter")
+                ->selectRaw("count(*) as total")
+                ->groupBy('letter')
+                ->orderBy('letter', 'asc')
+                ->get();
+
+        // 1. Get all titles and join them into one big string
+        $allTitles = self::pluck('title')->join(' ');
+        // 2. Normalize the string (lowercase, remove punctuation)
+        $normalized = preg_replace('/[^\w\s]/', '', strtolower($allTitles));
+        // 3. Get all individual words
+        $allWords = str_word_count($normalized, 1);
+        // 4. Define simple "stop words" to ignore
+        $stopWords = [
+            'a', 'an', 'the', 'to', 'of', 'for', 'with', 'on', 'in', 'it', 'is', 'and'
+        ];
+        $frequencies = [];
+        foreach ($allWords as $word) {
+            // 5. Skip if it's a stop word or too short
+            if (in_array($word, $stopWords) || strlen($word) <= 2) {
+                continue;
+            }
+            // 6. Count the frequency
+            $frequencies[$word] = ($frequencies[$word] ?? 0) + 1;
+        }
+        // 7. Sort from most frequent to least frequent
+        arsort($frequencies);
+
+        $words = array_slice($frequencies, 0, 10);
+        return ['title_summary' =>
+            ['alphabetic_titles' => $title],
+            ['similar_titles' => $words]
+        ];
+    }
+
 }
