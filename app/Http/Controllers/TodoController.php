@@ -85,4 +85,27 @@ class TodoController extends Controller
         // return $todoQuery;
         return Excel::download(new TodosExport($todoQuery),'export-todos-'.now()->toDateString().'.xlsx');
     }
+
+    public function summary(Request $request) {
+        $fields = (new Todo)->getFillable();
+        $rm = 'title';
+        $newFields = array_diff($fields, [$rm]);
+        array_push($newFields,'keyword');
+
+        if (empty($request->query('type'))) {
+            return response()->json([
+                'status' => "error",
+                'message' => "parameter 'type' cannot be empty"
+            ],400);
+        }
+        if (!in_array($request->query('type'),$newFields)) {
+            $fd = implode(', ',$newFields);
+            return response()->json([
+                'status' => "error",
+                'message' => "parameter 'type' cannot be other than availables : ". $fd
+            ],400);
+        }
+        $todo = Todo::getSummary($request->query('type')); //
+        return response()->json($todo);
+    }
 }
