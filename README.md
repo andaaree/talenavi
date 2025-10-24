@@ -25,12 +25,6 @@ This endpoint handles the creation and listing of todo items.
       "status": "pending"
     }
     ```
-
-#### **Get all Todos**
-
-* **Endpoint:** `GET /todo`
-* **Description:** Retrieves a list of all todo items.
-
 ---
 
 ### 2. Excel Export
