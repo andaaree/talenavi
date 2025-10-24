@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TodosExport;
 use App\Http\Requests\StoreTodoRequest;
 use App\Models\Todo;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TodoController extends Controller
 {
@@ -74,5 +76,13 @@ class TodoController extends Controller
     public function destroy(Todo $todo)
     {
         //
+    }
+
+    public function excel(Request $request)
+    {
+        $todoQuery = Todo::query()->filter($request->all())
+        ->get();
+        // return $todoQuery;
+        return Excel::download(new TodosExport($todoQuery),'export-todos-'.now()->toDateString().'.xlsx');
     }
 }
