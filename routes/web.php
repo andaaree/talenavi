@@ -9,3 +9,4 @@ Route::get('/', function () {
 
 Route::post('/todo',[TodoController::class,'store'])->name('todo.post');
 Route::get('/excel',[TodoController::class,'excel'])->name('todo.excel');
+Route::get('/chart',[TodoController::class,'summary'])->name('todo.chart');
