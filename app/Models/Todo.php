@@ -154,4 +154,21 @@ class Todo extends Model
         return ['time_tracked_summary' => $time];
     }
 
+    public static function getAssigneeSummary() : array {
+        $assignee = self::query()
+            ->select('assignee')
+            ->selectRaw('COUNT(*) as total_todos')
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as total_pending_todos")
+            ->selectRaw("SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as total_timetracked_completed_todos")
+            ->groupBy('assignee')
+            ->get()
+            ->keyBy('assignee')
+            ->map(function ($item) {
+                return collect($item->toArray())->except('assignee');
+            });
+            ;
+
+        return ['assignee_summary' => $assignee];
+    }
+
 }
