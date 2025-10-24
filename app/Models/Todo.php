@@ -20,7 +20,7 @@ class Todo extends Model
 
     protected $attributes = [
         'time_tracked' => 0,
-        'status' => TodoStatusEnum::Pending,
-        'priority' => TodoPriorityEnum::Low,
+        'status' => TodoStatusEnum::Pending->value,
+        'priority' => TodoPriorityEnum::Low->value,
     ];
 }
