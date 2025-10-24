@@ -13,10 +13,19 @@ class Todo extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'title',
+        'assignee',
+        'time_tracked',
+        'status',
+        'priority',
+        'due_date',
+    ];
 
     protected $casts = [
       'due_date'=> 'datetime:d-m-Y',
+      'status' => TodoStatusEnum::class,
+      'priority' => TodoPriorityEnum::class
     ];
 
     protected $attributes = [
