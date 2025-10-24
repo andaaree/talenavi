@@ -144,4 +144,14 @@ class Todo extends Model
         return ['priority_summary' => $prior];
     }
 
+    public static function getTimeTrackedSummary() : array{
+        $time = self::query()
+                ->selectRaw('YEAR(due_date) as year, MONTH(due_date) as month, SUM(time_tracked) as total_time')
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get();
+        return ['time_tracked_summary' => $time];
+    }
+
 }
